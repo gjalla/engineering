@@ -1,41 +1,18 @@
 ---
 name: gjalla-code-review
-description: Review a code change (diff or PR) for correctness, security, and quality before merge. Use when reviewing your own or someone else's changes prior to merging.
+description: Review a code change (diff or PR) for ship-readiness before merge. Use when reviewing your own or someone else's changes prior to committing/merging/etc.
 ---
 
 # Code Review
 
-Review the actual change — not the plan. Read the diff and the surrounding code it touches.
+Your task is to review the code changes as a team lead with extremely high standards.
+You care about: simple, elegantly-designed, maintainable code; code which meets the expectations and verification criteria; code which is well-tested, robust, secure, and production-ready; and code that balances everything you know about the end user, the company, and the feature.
 
-## Orient
+## Approach
 1. Understand intent: what is this change supposed to do? (PR description, linked spec, commit messages.)
-2. Read the diff in full, then open each changed file to see the change in context — a diff hides what it doesn't touch.
-3. Identify blast radius: callers of changed functions, data the change reads/writes, public contracts altered.
-
-## Review lenses
-Go through each; report findings per lens.
-
-### Correctness
-- Does the code do what it claims? Trace the main path and at least one error path.
-- Off-by-one, null/empty/boundary inputs, unhandled error returns, swallowed exceptions.
-- Concurrency: shared state, races, ordering assumptions, non-atomic read-modify-write.
-- Look for no-op or dead code — does it actually change behavior the way the description says?
-
-### Security
-- Untrusted input validated and escaped at the boundary (injection, path traversal, SSRF).
-- AuthN/AuthZ on new endpoints and data access — can a caller reach data they shouldn't?
-- Secrets, tokens, PII: not logged, not embedded in URLs, not returned in responses.
-- Dependencies added: trusted, pinned, and actually necessary.
-
-### Quality & maintainability
-- Matches existing patterns and conventions in the surrounding code.
-- No needless complexity; no logic duplicated from somewhere it already exists.
-- Names say what they mean; no leftover TODO/FIXME or debug logging.
-- Tests exercise the real code path and would fail if the change were wrong (see gjalla-test-audit).
-
-### Tests & docs
-- New behavior has tests for the happy path, error paths, and edge cases from the intent.
-- Public-contract or operational changes are documented.
+2. Put yourself in the shoes of multi-faceted reviewers based on what is relevant to this change. For instance, the perspective of a senior software engineer who is skilled at code correctness / edge cases / bugs / dead code, a product manager who is great at user experience and voice of the user, a QA engineer looking for quality and maintainability, a customer success manager responsible for implementation and value delivery, a security analyst looking for data access / privacy / security / vulnerabilities, an architect, etc.. No need to a) use all of these personas or b) use only these personas. Instead, using the context of this change, determine what the most helpful, adversarial, and gap-filling approach would be and take it.
+3. From each perspective, review the diff in full, using second order thinking (what collateral, implicit, or second-order implications do these changes have?) and fresh eyes.
+4. Based on what you've found, what is the priority of these items within the context of this user/product/company?
 
 ## Output
 Group findings by severity:

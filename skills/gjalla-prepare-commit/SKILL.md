@@ -1,35 +1,27 @@
 ---
-name: gjalla-prepare-commit
-description: Shape staged changes into clean, atomic, well-described commits and run pre-commit checks before pushing. Use right before committing or opening a PR.
+name: gjalla-prepare-and-commit
+description: Make sure your code is ready to commit, then stage changes into clean, atomic commit. Use before committing.
 ---
 
-# Prepare Commit
+# Make your changes commit-ready
 
-Turn a working change into a commit history that reviewers and future readers can trust.
+Turn a working change into a committable change that reviewers and future readers can trust.
 
-## 1. Review what you're about to commit
-- Read the full staged diff (`git diff --staged`). Commit what you intend — nothing more.
-- Remove debug logging, commented-out code, stray files, and unrelated changes.
-- Never stage secrets, credentials, tokens, or `.env` values. Confirm none appear in the diff (including inside URLs).
+## 1. Review what you implemented
+- Are all verification criteria and expected outcomes met?
+- Is the implementation complete (no dummy data or placeholder stubs left)?
+- Are all of the gjalla rules met?
+- Does this elegantly build on top of / within the existing state/architecture/properties?
+- Does it match the plan / gjalla spec?
+- Are positive, negative, and edge cases saliently tested?
 
-## 2. Make commits atomic
-- One logical change per commit. If the diff does two unrelated things, split it (`git add -p`).
-- Each commit should build and pass tests on its own where practical.
-- Keep refactors separate from behavior changes — mixing them hides the real change in noise.
+## 2. Make a commit plan
+- One logical change per commit. If the diff does two unrelated things, don't be afraid to split it (`git add -p`).
+- Ensure you're committing to the right branch and/or following the expected branching strategy.
+- Prepare what you will report to git (description of the lines of code that are changing) and to gjalla (via attestation - properties of the system that have changed, including a reference to the gjalla spec)
+- Ensure gjalla git hooks are in place already. If they're not, your attestation and spec will not get sync'd into the master source of truth.
 
-## 3. Verify before committing
-- Run the relevant tests and the linter/formatter; fix failures rather than committing red.
-- Confirm the change does what you set out to do (see gjalla-verify for spec completion, gjalla-code-review for a quality pass).
-
-## 4. Write the message
-- Subject: imperative and scoped — "Fix race in token refresh", not "fixes stuff".
-- Body (when non-trivial): WHY the change exists and any consequence or trade-off a reader needs. The diff already shows the what.
-- Reference the issue or spec it satisfies.
-
-## 5. Final checks
-- Re-read the diff one last time as if reviewing someone else's work.
-- Ensure project conventions and rules are met. (If you use gjalla, re-check `gjalla rules` and attest your change before pushing.)
-
-## Principles
-- A commit is a unit of understanding, not a save point. Optimize for the person who reads it in six months.
-- If you can't describe the commit in one clear subject line, it's probably doing too much — split it.
+## 3. Commit
+- Write your gjalla attestation. `gjalla attest --example` will show you the format, make sure to view the full output (do not run the command and pipe it 2>/dev/null for example)
+- Write your commit message and run your commit. Your gjalla attestatation and spec will be sync'd with gjalla as part of the git hooks, no additional work required from you.
+- Unless the user has given you blanket permission, you should likely ask the user before pushing the commit.
