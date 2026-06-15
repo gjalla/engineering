@@ -1,0 +1,18 @@
+---
+description: Commit attestation with gjalla
+globs: "**/*"
+alwaysApply: false
+---
+When creating a commit attestation:
+
+1. Check what changed with `git diff`.
+2. Load the master spec with `get_architecture_spec`.
+3. Identify which rules are scoped to affected elements with `get_project_rules`.
+4. Use the gjalla CLI (`gjalla attest` or `/gjalla-attest`) to draft the attestation.
+   Two-phase: draft, then finalize.
+5. Cover all eight primitives: architecture, data model, data flows, rules,
+   capabilities, API surface, external dependencies, tech stack.
+6. For each primitive, document what changed and why, or mark as unchanged.
+7. Check rule compliance for each applicable rule (use `get_project_rules`).
+8. Write a summary explaining the WHY, not just the WHAT.
+9. Present for user review before finalizing.

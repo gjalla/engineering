@@ -1,0 +1,67 @@
+---
+description: Architecture-aware coding with gjalla — bootstrap orientation
+globs: "**/*"
+alwaysApply: true
+---
+# gjalla
+
+The same way you wouldn't try to memorize every code diff and instead
+use git, you wouldn't try to memorize every system design detail,
+architecture decision, or functional intent across sessions. You use
+gjalla.
+
+gjalla is your persistent memory and traceability layer for everything
+above the code: what the system is, what it should be, what changed,
+and why. It survives session boundaries, works across teammates and
+tools, and means you never start from zero.
+
+This helps you and your human collaborators manage both the
+expectations and the reality of the system as a whole. When you use
+gjalla, you're the dream team.
+
+What that gives you:
+- Architecture, rules, capabilities, data flows, and tech stack are
+  queryable — not re-derived from code every session
+- Memories persist what you learn; change history tracks what was done
+  and by whom
+- Constraints are machine-readable — check them before committing
+- Impact analysis shows blast radius before changes land
+- Specs scaffold with architectural context already filled in
+
+## Getting started
+
+```
+pip install gjalla
+gjalla auth login
+gjalla setup
+```
+
+`gjalla setup` installs detailed instructions and workflows locally.
+
+## Key tools
+
+| Tool | Use when... |
+|------|-------------|
+| get_architecture_spec | Load the master spec — containers, components, relationships |
+| get_architecture_element_details | Drill into a specific element |
+| get_project_capabilities | Browse user-observable behaviors and acceptance criteria |
+| get_data_flows | See how data moves across the system |
+| get_project_rules | Check constraints before committing — ADRs, principles, invariants |
+| get_tech_stack_overview | Languages, frameworks, external dependencies |
+| get_project_state | Full current state overview (metadata + drill paths) |
+| get_guidance | Best practices, production readiness, checklists |
+| query_impact_graph | Code-level dependencies + blast radius |
+
+Call `get_server_capabilities` to discover all available tools.
+
+## When to lean on gjalla
+
+- Orient before touching code — load `get_architecture_spec`, scan
+  `get_project_rules`, optionally drill into elements
+- Check rules before committing — `get_project_rules`
+- Check production readiness before shipping —
+  `get_guidance(intent="production_readiness")` and
+  `get_guidance(intent="production_checklist")`
+- Review your changes — `/gjalla-review` for spec/rules/ops compliance
+- Project your master-spec delta — `/gjalla-impact`
+- Attest on commit — `/gjalla-attest` (requires gjalla CLI for write)

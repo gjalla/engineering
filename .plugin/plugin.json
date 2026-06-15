@@ -1,0 +1,29 @@
+{
+  "name": "gjalla",
+  "version": "1.0.0",
+  "description": "Production-readiness for your AI coding agents.",
+  "author": {
+    "name": "gjalla",
+    "email": "hello@gjalla.io",
+    "url": "https://gjalla.io"
+  },
+  "homepage": "https://gjalla.io",
+  "repository": "https://github.com/gjalla/engineering",
+  "license": "MIT",
+  "keywords": [
+    "production-readiness",
+    "architecture",
+    "code-review",
+    "governance",
+    "attestation",
+    "context",
+    "quality",
+    "verification",
+    "harness",
+    "model-agnostic",
+    "shared-memory",
+    "token-savings",
+    "agent-agnostic",
+    "production-grade"
+  ]
+}

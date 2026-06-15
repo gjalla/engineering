@@ -1,0 +1,28 @@
+---
+description: Master-spec, rules, and production-readiness review with gjalla
+globs: "**/*"
+alwaysApply: false
+---
+When reviewing a spec OR a code change with gjalla:
+
+1. Identify what you're reviewing — a draft spec (e.g. a markdown change-design
+   under `.gjalla/changes/`) or a code diff (`git diff HEAD`).
+2. Load the current master spec with `get_architecture_spec`. Drill into
+   specific elements with `get_architecture_element_details` as needed.
+3. Load rules with `get_project_rules`.
+4. Load production-readiness guidance with
+   `get_guidance(intent="production_readiness")` and
+   `get_guidance(intent="production_checklist")`.
+5. Review across three dimensions:
+   - **Spec compliance** — for a spec: is it grounded in the architecture and
+     capability vocabulary? For a code change: does the diff respect component
+     boundaries, capability contracts, and existing data flows?
+   - **Rules compliance** — list each affected rule by name. COMPLIES /
+     VIOLATES / N/A. Quote rule text on violations.
+   - **Production readiness** — observability, error handling, retries,
+     rollback, runbooks, tests, performance.
+6. Present findings grouped by severity: BLOCKING, WARNING, NOTE.
+7. End with a verdict: APPROVE / REQUEST CHANGES / NEEDS DISCUSSION.
+
+For the forward-looking "what will the master spec look like after this lands"
+view, use the `/gjalla-impact` command instead.
