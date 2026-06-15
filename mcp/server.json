@@ -1,0 +1,27 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.gjalla/mcp",
+  "title": "gjalla",
+  "description": "Production-readiness for your AI coding agents.",
+  "websiteUrl": "https://gjalla.io",
+  "repository": {
+    "url": "https://github.com/gjalla/engineering",
+    "source": "github",
+    "subfolder": "mcp"
+  },
+  "version": "1.0.0",
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://gjalla.io/mcp/stream",
+      "headers": [
+        {
+          "name": "Authorization",
+          "description": "Bearer <gjalla agent API key>. Generate one at https://gjalla.io/account/api-keys.",
+          "isRequired": true,
+          "isSecret": true
+        }
+      ]
+    }
+  ]
+}
