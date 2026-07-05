@@ -14,14 +14,36 @@ Turn a working change into a committable change that reviewers and future reader
 - Does this elegantly build on top of / within the existing state/architecture/properties?
 - Does it match the plan / gjalla spec?
 - Are positive, negative, and edge cases saliently tested?
+- Has the code review process been completed?
 
-## 2. Make a commit plan
+If the answer to any of these questions is no, determine what changes are needed. We absolutely cannot tolerate any whack-a-mole changes. It's better to take a step back and design the elegant and sustainable solution to any issues. If a tradeoff needs human review, you may prompt your user.
+
+Once you can confidently answer 'yes', record what you verified so the change report has evidence, not just claims:
+
+```
+gjalla ledger mark tests-run --evidence cmd=<what-ran> --evidence exit=<code>
+gjalla ledger mark dod-checked
+```
+
+## 2. Present the process (the second human gate)
+- Enter the commit loop and render the change report:
+
+```
+gjalla loop advance --to commit
+gjalla loop report
+```
+
+- The report is the human gate: "here are the phases I went through, the evidence for each (reviews, test runs, milestones), and the system impact." Present it — or its key points — to the human before sealing, unless they've given you standing approval for low-risk changes.
+
+## 3. Make a commit plan
 - One logical change per commit. If the diff does two unrelated things, don't be afraid to split it (`git add -p`).
+- Stage exact files — bulk-staging (`git add -A`/`-u`/`.`) is how unrelated in-flight work ends up in your commit.
 - Ensure you're committing to the right branch and/or following the expected branching strategy.
-- Prepare what you will report to git (description of the lines of code that are changing) and to gjalla (via attestation - properties of the system that have changed, including a reference to the gjalla spec)
+- Prepare what you will report to git (code-level changes) and to gjalla (system-level changes)
 - Ensure gjalla git hooks are in place already. If they're not, your attestation and spec will not get sync'd into the master source of truth.
 
-## 3. Commit
+## 4. Commit
 - Write your gjalla attestation. `gjalla attest --example` will show you the format, make sure to view the full output (do not run the command and pipe it 2>/dev/null for example)
-- Write your commit message and run your commit. Your gjalla attestatation and spec will be sync'd with gjalla as part of the git hooks, no additional work required from you.
+- The process you followed, which is automatically cataloged, will get appended to your attestation. Don't write anything to the `process` key or it will get replaced. Your milestones are your process evidence; the derivation is what makes them trustworthy.
+- Write your commit message and run your commit. Your gjalla attestation, spec, and sealed process ledger will be sync'd with gjalla as part of the git hooks, no additional work required from you.
 - Unless the user has given you blanket permission, you should likely ask the user before pushing the commit.

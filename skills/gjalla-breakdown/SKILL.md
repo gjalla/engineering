@@ -27,3 +27,21 @@ Waves of work comprise groups of tasks:
 - Make sure that docs, verification, tests, etc are included in your breakdown.
 
 To avoid overload, try to keep the total task count under 20 for a single spec; split larger features into multiple specs.
+
+## Enter the implement loop
+
+Once the breakdown is written, load it into the loop so progress is visible outside your context window:
+
+```
+gjalla loop advance --to implement --waves-from <path-to-tasks.md>
+```
+
+As you finish each wave, record it with its acceptance evidence — a wave isn't done until the mark exists:
+
+```
+gjalla ledger mark wave-verified --evidence wave=<id> --evidence tests=<what-passed>
+```
+
+This is what lets a human (or a resumed session after compaction) see exactly where implementation stands without re-reading anything.
+
+When the final wave is verified, the change moves to review (see gjalla-code-review).
