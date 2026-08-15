@@ -18,9 +18,10 @@ The information needed for a production-grade spec / reference doc includes the 
 - **Problem Statement**: What user or system problem does this solve?
 - **Goals**: What must be true when this is done?
 - **Non-Goals**: What is explicitly out of scope?
-- **Behavioral Requirements**: Observable behaviors the feature must exhibit, in other words, new capability properties that will be present within the system.
+- **Behavioral Requirements**: Observable behaviors the feature must exhibit, in other words, new capability properties that will be present within the system. For any requirement about what the system permits or prevents, state it as system state rather than as something the user sees, and name the file and function that enforces it. A requirement no code location owns is a wish.
+- **Threat model and security requirements**: What are the adversarial security cases we have considered with this design? What properties of secure software systems need to be built into the solution and have associated tests to ensure we never regress?
 - **Technical Approach**: How will this be built? How will this affect architecture, data flows, surface area, and other gjalla primitives?
-- **Verification Strategy**: Unit and integration tests for positive/negative/edge cases are a given; you should also consider security & safety, maintainability, performance, user experience, or domain-specific verification criteria such as compliance, business constraints, or platform constraints. 
+- **Verification Strategy**: Unit and integration tests for positive/negative/edge cases are a given; you should also consider security & safety (i.e. do our tests include common secure coding pitfalls like the AI OWASP Top 10 or tests for other security mistakes that could make us vulnerable?), maintainability, performance, user experience, or domain-specific verification criteria such as compliance, business constraints, or platform constraints. Name at least one test that fails today and passes once this is built — if you can't name one, the goal isn't yet concrete enough to implement against.
 - **Dependencies**: What must exist or be deployed first? Consult gjalla if your project is a part of a system and this may affect its interoperability.
 - **Rollback Plan**: How to safely revert if something goes wrong.
 
