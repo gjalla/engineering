@@ -1,5 +1,5 @@
 ---
-description: Commit attestation with gjalla
+description: Report system-level changes and rule adherence for a code commit
 globs: "**/*"
 alwaysApply: false
 ---
