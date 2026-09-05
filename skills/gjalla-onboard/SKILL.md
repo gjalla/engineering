@@ -139,7 +139,7 @@ Show the user:
 - Totals, and how many records were backfilled.
 - If `pricing.unpriced_models` is non-empty, say cost is token-only for those models.
 
-Summarize the response. Do not compute numbers yourself.
+Do not compute numbers yourself, but instead your role is to understand and give any interesting insights to the user.
 
 ## 8. Seed shared memory
 
@@ -164,8 +164,4 @@ Print the facts you saved and: "Remove any with `gjalla memory archive <key>`."
 gjalla setup doctor
 ```
 
-Report any row marked FAIL with its fix. Confirm the guidance file for the detected agent contains a gjalla section. Done.
-
-## Stop conditions
-
-Stop on failure in steps 1, 3, 4, and 6. Steps 5, 7, and 8 are best-effort: if there are no transcripts, say so and continue; if the stats call returns an error, print the body and continue; if one memory fails to save, continue with the next.
+Report any row marked FAIL with its fix. Confirm the guidance file for the detected agent contains a gjalla section. Make sure you've highlighted interesting insights to the user. Done.
