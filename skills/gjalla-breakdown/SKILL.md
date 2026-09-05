@@ -30,18 +30,6 @@ To avoid overload, try to keep the total task count under 20 for a single spec; 
 
 ## Enter the implement loop
 
-Once the breakdown is written, load it into the loop so progress is visible outside your context window:
-
-```
-gjalla loop advance --to implement --waves-from <path-to-tasks.md>
-```
-
-As you finish each wave, record it with its acceptance evidence — a wave isn't done until the mark exists:
-
-```
-gjalla ledger mark wave-verified --evidence wave=<id> --evidence tests=<what-passed>
-```
-
-This is what lets a human (or a resumed session after compaction) see exactly where implementation stands without re-reading anything.
+Once the breakdown is written, keep it in the spec directory next to the design so a human (or a resumed session after compaction) can see exactly where implementation stands without re-reading anything. Tick waves off in that file as they land, with the acceptance evidence next to each.
 
 When the final wave is verified, the change moves to review (see gjalla-code-review).

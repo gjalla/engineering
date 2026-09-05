@@ -34,10 +34,4 @@ The information needed for a production-grade spec / reference doc includes the 
 
 Once you're happy with the solution you've written into the spec, it should be presented to the human for approval — this is the first of two human gates in the gjalla-autonomous process (the other is at commit). Use your native plan-presentation mechanism where you have one (Claude plan mode, Cursor plan); otherwise present the spec plainly and wait. Do not begin implementing without explicit approval.
 
-On approval, bind the work to its change: `gjalla loop start <slug>`. If you're Claude Code, your plan approval is recorded automatically as a `spec-approved` milestone; on other agents, record it yourself:
-
-```
-gjalla ledger mark spec-approved --ref .gjalla/changes/<slug>/design.md --evidence source=<your-agent-name>
-```
-
-From here on, the ledger is the record of the process you follow, it's a valuable artifact to build trust between you and your human. Milestones you mark (whether manually or automatically with hooks) are what the human sees when they review your work, so it's important for you to follow the process.
+On approval, start implementing. If you're Claude Code, the approval itself is recorded by gjalla automatically; nothing else needs to be marked.
