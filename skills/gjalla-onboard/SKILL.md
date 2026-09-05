@@ -26,7 +26,7 @@ find . -mindepth 2 -maxdepth 2 -name .git -prune | sed 's#/\.git$##'
 ```
 
 - None found: tell the user this folder has no repos to onboard. The wiring above still stands.
-- Up to five: onboard each one. Run steps 1 through 9 inside each repo in turn, then give the user one combined report at the end. Do not ask which ones; they asked for this folder.
+- Up to five: onboard each one. Run steps 1 through 8 inside each repo in turn, then give the user one combined report at the end. Do not ask which ones; they asked for this folder.
 - More than five: list them and ask which to prioritize, then onboard those in the order given. Offer to do the rest afterwards.
 
 ## 1. CLI
@@ -73,102 +73,61 @@ Sync resolves this repo to a project from its origin remote, creating one if the
 
 ## 5. Backfill the last 7 days
 
-Goal: one attestation record per commit that a coding-agent session made in this repo during the last 7 days, carrying that session's token usage and a task-type label. If that yields fewer than 5 commits, widen to 30 days once.
+Goal: one record per commit that a coding-agent session made in this repo during the last 7 days, carrying that session's token usage and a task-type label. If that yields fewer than 5 commits, widen to 30 days once.
 
 You know where your own harness keeps session transcripts (Claude Code: `~/.claude/projects/`, one directory per working directory; Codex: `~/.codex/sessions/`). Find the transcripts that touched this repo. Be careful with scoping: sessions that ran from a parent directory or a subdirectory of this repo still count if their commits landed here, so let the commits decide, not the directory name.
 
-Key commands:
+For each transcript:
 
-- Session token totals, from the CLI, given a transcript's session id (the UUID in its filename):
-  ```
-  gjalla session context --agent <claude-code|codex-cli> --session <uuid> --cwd "$REPO"
-  ```
-  Use `facts.tokens` (input, output, cache_read, cache_creation, input_uncached). If `facts` is null, skip that session.
-- Model: the transcript records `"model":"..."` on each request; take the most frequent.
-- Commits: a transcript records each `git commit` it ran, and the output contains `[branch shortsha]`. Extract those, expand with `git rev-parse --verify <short>^{commit}`, and drop any that no longer exist. A session with no commits is skipped. If a sha appears in several transcripts, the first one wins. Skip any sha that already has `.gjalla/.platform/attestations/<sha>.yaml`.
-- Commit facts: `git show -s --format='%aI%n%s%n%b' <sha>` for the author date, subject, and body.
+- Its session id is the UUID in its filename.
+- A transcript records each `git commit` it ran, and the output contains `[branch shortsha]`. Extract those and drop any that `git rev-parse --verify <short>^{commit}` rejects. A session with no commits is skipped. If a sha appears in several transcripts, the first one wins.
+- Classify each commit into exactly one of `feature`, `bug-fix`, `refactor`, `docs`, `test`, `chore`. Use the conventional-commit prefix when there is one; otherwise judge from `git show -s --format='%s%n%b' <sha>` and the branch name.
 
-Classify each commit into exactly one of `feature`, `bug-fix`, `refactor`, `docs`, `test`, `chore`. Use the conventional-commit prefix when there is one; otherwise judge from the subject, body, and branch name.
+Then record each commit once:
 
-Write `.gjalla/.platform/attestations/<sha>.yaml`:
-
-```yaml
-source: backfill
-timestamp: "<author date, %aI>"
-agent: <claude-code|codex-cli|devin|cursor-cli|opencode|...>
-agent_provider: <anthropic|openai|cognition|cursor|...>
-agent_model: "<model>"
-agent_session_id: "<uuid>"
-provenance:
-  type: ad-hoc
-  ref: backfill
-task_type: <one of the six>
-summary: "<commit subject>"
-telemetry:
-  version: 2
-  session_id: "<uuid>"
-  source: backfill
-  agent_runtime: <claude-code|codex-cli|devin|cursor-cli|opencode|...>
-  tokens:
-    input: <n>
-    output: <n>
-    cache_read: <n>
-    cache_creation: <n>
-    input_uncached: <n>
+```
+gjalla attest backfill --commit <sha> --session <uuid> --agent <claude-code|codex-cli|cursor|...> --task-type <type>
 ```
 
-Append one line to `.gjalla/.platform/log.jsonl` for each sha not already present in that file. Append only; never rewrite it.
-
-```json
-{"commit":"<sha>","branch":"<branch>","timestamp":"<author date>","agent":"<agent>","summary":"<subject>","synced":false,"agent_session_id":"<uuid>","telemetry":{"version":2,"session_id":"<uuid>","source":"backfill","agent_runtime":"<agent>","tokens":{"input":0,"output":0,"cache_read":0,"cache_creation":0,"input_uncached":0}}}
-```
+It reads tokens and model from the transcript itself, takes the commit's subject and author date, and skips a sha that is already recorded. If it says the session has no token data, that is fine; the commit still counts. If it says no model, pass `--model` with the model you see in the transcript.
 
 Tell the user how many commits and sessions you recorded, and that the only things leaving the machine are token counts, timestamps, shas, branch names, commit subjects, and task-type labels.
 
-## 6. Upload
+## 6. Upload and report
 
 ```
 gjalla sync
-grep -c '"synced": false' .gjalla/.platform/log.jsonl
 ```
 
-The count should be 0. If sync fails, print the error and stop.
+When sync uploads new records it prints a spend summary underneath: sessions, commits, estimated cost, cost by task type with shares, the most expensive session and what it shipped, and any models it could not price. Quote it back to the user and add what is interesting: which share of cost went to bug fixes, what the most expensive session was for, anything that surprises you. Do not compute numbers yourself.
 
-## 7. Report
+If sync reports an error, print it and stop.
 
-```
-KEY=${GJALLA_API_KEY:-$(grep -E '^api_key:' ~/.gjalla/config.yaml | awk '{print $2}')}
-URL=${GJALLA_API_URL:-$(grep -E '^api_url:' ~/.gjalla/config.yaml | awk '{print $2}')}
-URL=${URL:-https://gjalla.io}
-curl -s -H "x-api-key: $KEY" "$URL/api/agent/projects/$PROJECT_ID/attestations/stats?days=30"
-```
+## 7. Seed shared memory
 
-Show the user:
-- Spend by task type: commits, sessions, tokens, estimated cost. Say which share of cost went to bug fixes.
-- The most expensive session: estimated cost, task types, and the commit subjects it shipped.
-- Totals, and how many records were backfilled.
-- If `pricing.unpriced_models` is non-empty, say cost is token-only for those models.
-
-Do not compute numbers yourself, but instead your role is to understand and give any interesting insights to the user.
-
-## 8. Seed shared memory
-
-Look for durable, non-obvious facts your agents already learned but never shared:
+Gather every durable, non-obvious fact your agents already learned but never shared:
 
 - `~/.claude/projects/$ENC/memory/*.md` (skip `MEMORY.md`)
 - `~/.codex/memories/*` if present
 - Sections of `CLAUDE.md`, `AGENTS.md`, or `README.md` headed gotcha, caveat, pitfall, note, or troubleshooting
 - `git log --since=30.days --format=%b | grep -iE 'because|gotcha|note:'`
 
-Pick 3 to 5. Reject anything that is a task or TODO, anything matching key, token, password, or secret, and anything already in `gjalla memory show`. Save each:
+Reject anything that is a task or TODO, anything matching key, token, password, or secret, and anything already in `gjalla memory show`.
+
+Now compare the candidates with each other before saving any. Group them by subject. Within a group:
+
+- Two statements that say the same thing are a duplicate: keep the clearer one.
+- Two statements that assert different things about the same subject are a contradiction. Do not pick one by taste. If a minute in the code settles it, save the one the code supports. Otherwise save neither and report the pair with where each came from.
+
+Save 3 to 5 of the survivors:
 
 ```
 gjalla memory add "<the fact>" -n "<short-name>" -c project
 ```
 
-Print the facts you saved and: "Remove any with `gjalla memory archive <key>`."
+Report memory health in one line: candidates found, duplicates collapsed, contradictions found, saved. Then print the facts you saved and: "Remove any with `gjalla memory archive <key>`."
 
-## 9. Verify
+## 8. Verify
 
 ```
 gjalla setup doctor
