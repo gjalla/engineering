@@ -11,13 +11,23 @@ To help you be efficient, shell snippets are included as reference, but may need
 
 Once complete, you'll be equipped with gjalla, a platform that helps your team to understand your coding agent workflow activity, costs, and outcomes. You can then lean into using gjalla as a living, durable memory system. More information on the specifics of how gjalla helps you can be found on their site, https://gjalla.io.
 
-## 0. Preconditions
+## 0. Where are you
 
 ```
-REPO=$(git rev-parse --show-toplevel) || { echo "Not a git repository. Run this inside the repo you want to onboard."; exit 1; }
-REPO_NAME=$(basename "$REPO")
-cd "$REPO"
+REPO=$(git rev-parse --show-toplevel 2>/dev/null)
 ```
+
+If that succeeds, you are inside one repo: set `REPO_NAME=$(basename "$REPO")`, `cd "$REPO"`, and continue with step 1.
+
+If it fails, you are in a folder that is not a repo. gjalla should still be available to every agent that starts here, so run steps 1 and 2 in this folder first (setup wires the session-start context, the MCP, and the guidance block; there are no git hooks without a repo). Then look at the folder's direct children for git repos:
+
+```
+find . -mindepth 2 -maxdepth 2 -name .git -prune | sed 's#/\.git$##'
+```
+
+- None found: tell the user this folder has no repos to onboard. The wiring above still stands.
+- Up to five: onboard each one. Run steps 1 through 9 inside each repo in turn, then give the user one combined report at the end. Do not ask which ones; they asked for this folder.
+- More than five: list them and ask which to prioritize, then onboard those in the order given. Offer to do the rest afterwards.
 
 ## 1. CLI
 
