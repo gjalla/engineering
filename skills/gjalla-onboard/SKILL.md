@@ -86,10 +86,10 @@ For each transcript:
 Then record each commit once:
 
 ```
-gjalla attest backfill --commit <sha> --session <uuid> --agent <claude-code|codex-cli|cursor|...> --task-type <type>
+gjalla attest add --commit <sha> --session <uuid> --task-type <type>
 ```
 
-It reads tokens and model from the transcript itself, takes the commit's subject and author date, and skips a sha that is already recorded. If it says the session has no token data, that is fine; the commit still counts. If it says no model, pass `--model` with the model you see in the transcript.
+It works out which agent the session belongs to, reads tokens and model from that transcript, takes the commit's subject and author date from git, and skips a sha that is already recorded. If it says no transcript was found for the session, the id is wrong or the transcript is not on this machine; move on. If it says the transcript has no token counts, the commit still counts.
 
 Tell the user how many commits and sessions you recorded, and that the only things leaving the machine are token counts, timestamps, shas, branch names, commit subjects, and task-type labels.
 
@@ -99,7 +99,7 @@ Tell the user how many commits and sessions you recorded, and that the only thin
 gjalla sync
 ```
 
-When sync uploads new records it prints a spend summary underneath: sessions, commits, estimated cost, cost by task type with shares, the most expensive session and what it shipped, and any models it could not price. Quote it back to the user and add what is interesting: which share of cost went to bug fixes, what the most expensive session was for, anything that surprises you. Do not compute numbers yourself.
+When sync uploads new records it prints a spend summary underneath: sessions, commits, estimated cost, cost by task type with shares, the most expensive session and what it shipped, and any models it could not price. `gjalla spend show` prints it again any time; `gjalla spend show --json` gives the full payload. Quote it back to the user and add what is interesting: which share of cost went to bug fixes, what the most expensive session was for, anything that surprises you. Do not compute numbers yourself.
 
 If sync reports an error, print it and stop.
 
