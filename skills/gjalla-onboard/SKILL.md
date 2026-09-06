@@ -54,10 +54,16 @@ gjalla project list
 If that succeeds, you are signed in; skip to step 4. Otherwise:
 
 ```
-gjalla auth login --no-browser
+gjalla auth login --no-browser --no-wait
 ```
 
-Print the URL and code exactly as shown and ask the user to open the URL and approve. The command blocks until they do. If it exits non-zero, print the error and stop.
+Print the URL and code exactly as shown and ask the user to open the URL and approve. Do not run the blocking form: a tool call shows no output until it returns, so the user would never see the code. When the user says they have approved (or after a short wait), run:
+
+```
+gjalla auth status
+```
+
+Exit 0 means signed in; continue. Exit 3 means still waiting: show the URL and code again and ask once more. Exit 4 means the code expired: rerun the login command. Any other non-zero exit: print the error and stop.
 
 ## 4. Link the project
 
