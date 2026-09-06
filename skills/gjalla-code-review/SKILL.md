@@ -17,17 +17,10 @@ Each review must include the perspective of the architect and the security analy
 
 ## Review until clean
 
-If this change is loop-bound, enter the review loop first: `gjalla loop advance --to review`.
-
 A review with findings is not the end of the process — it's the middle. A non-clean review mandates another full round with fresh eyes after the fixes land, until a round comes back clean (no blocking or must-fix changes; cap at 5 rounds).
 
 - "Fresh eyes" is literal: where your agent supports subagents, spawn a fresh-context reviewer for each round rather than re-reading your own work — self-review after self-fix is grading your own homework. Where you can't, disclose it: add `--evidence review_mode=self` to the marks below.
-- Record every round in the ledger so the loop is visible and provable:
-
-```
-gjalla ledger mark review-round --round <N> --evidence result=<clean|not-clean>
-gjalla ledger mark review-clean            # when a round comes back clean
-```
+- Keep a short record of each round in your working notes: what was found, what changed, and whether the round came back clean.
 
 - If you hit the cap without a clean round, do not loop forever and do not quietly proceed: record the final round honestly and surface the unresolved findings to the human.
 
