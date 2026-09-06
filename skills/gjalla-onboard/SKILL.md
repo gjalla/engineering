@@ -57,13 +57,13 @@ If that succeeds, you are signed in; skip to step 4. Otherwise:
 gjalla auth login --no-browser --no-wait
 ```
 
-Print the URL and code exactly as shown and ask the user to open the URL and approve. Do not run the blocking form: a tool call shows no output until it returns, so the user would never see the code. When the user says they have approved (or after a short wait), run:
+Print the URL and code exactly as shown and ask the user to open the URL and approve. Do not run the blocking form: a tool call shows no output until it returns, so the user would never see the code. Do not end your turn to wait. Poll instead, in chunks that fit your tool timeout:
 
 ```
-gjalla auth status
+for i in $(seq 1 9); do gjalla auth status && break; sleep 10; done
 ```
 
-Exit 0 means signed in; continue. Exit 3 means still waiting: show the URL and code again and ask once more. Exit 4 means the code expired: rerun the login command. Any other non-zero exit: print the error and stop.
+Repeat that command until it exits 0 (signed in), for up to five minutes. If `gjalla auth status` exits 4 the code expired: rerun the login command and show the new code. If it is still waiting after five minutes, show the URL and code once more and ask the user to confirm. Any other non-zero exit: print the error and stop.
 
 ## 4. Link the project
 
