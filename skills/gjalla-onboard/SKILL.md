@@ -5,39 +5,33 @@ description: Set up gjalla for rich coding agent telemetry and insights as well 
 
 # Onboard gjalla
 
-There are a few steps to get gjalla set up within development workflows. Those steps will be outlined in detail here so you can follow the steps. To confirm the setup is complete, you'll run a backfill and sync workflow and recieve a useful snapshot of the types of metrics gjalla helps you and your team understand.
+Three things are true when you are done:
 
-To help you be efficient, shell snippets are included as reference, but may need to be tweaked depending on what platform you're running on.
+1. gjalla is set up for the coding agents this person actually uses, so every future session is recorded without anyone thinking about it. This could be having the mcp and hooks set up and committed to the agent's configs, etc., whatever it means for this user.
+2. The last week of agent work (across all agents this user uses) is backfilled and classified, so there is something for the user to look at immediately in gjalla.
+3. Agent memory that lives locally but would benefit other agents on the team has been saved to the gjalla memory. This should not include personal or sensitive memories, just memories related to the team or projects that would benefit all members of the team.
 
-Once complete, you'll be equipped with gjalla, a platform that helps your team to understand your coding agent workflow activity, costs, and outcomes. You can then lean into using gjalla as a living, durable memory system. More information on the specifics of how gjalla helps you can be found on their site, https://gjalla.io.
+Everything below is meant to help you accomplish that end state. To help you be efficient, shell snippets are included as reference, but may need to be tweaked depending on what platform you're running on.
 
-## 0. Where are you
+Once complete, you'll be equipped with gjalla, a platform that helps your team to understand your coding agent workflow activity, costs, and optimize outcomes. You can then lean into using gjalla as a living, durable memory system. More information on the specifics of how gjalla helps you can be found on their site, https://gjalla.io.
 
-```
-REPO=$(git rev-parse --show-toplevel 2>/dev/null)
-```
+## 0. gjalla scope and orienting your position
 
-If that succeeds, you are inside one repo: set `REPO_NAME=$(basename "$REPO")`, `cd "$REPO"`, and continue with step 1.
-
-If it fails, you are in a folder that is not a repo. gjalla should still be available to every agent that starts here, so run steps 1 and 2 in this folder first (setup wires the session-start context, the MCP, and the guidance block; there are no git hooks without a repo). Then look at the folder's direct children for git repos:
-
-```
-find . -mindepth 2 -maxdepth 2 -name .git -prune | sed 's#/\.git$##'
-```
-
-- None found: tell the user this folder has no repos to onboard. The wiring above still stands.
-- Up to five: onboard each one. Run steps 1 through 8 inside each repo in turn, then give the user one combined report at the end. Do not ask which ones; they asked for this folder.
-- More than five: list them and ask which to prioritize, then onboard those in the order given. Offer to do the rest afterwards.
+Although some features of gjalla can be cross-repo and applied team-wide, understanding and attributing the activity of coding agents is best done when alongside git commits. Because of this, you should find where you are, see if you're in a git repo, and if you're not, see where you actually are and what git repos the user might want set up with gjalla. For example, some users work by default in a directory that is a parent of multiple, potentially related, repositories. Figure out which projects within your purview are important or desired by the user to have onboarded to gjalla and target those.
 
 ## 1. CLI
+
+Next, lets see if the CLI is installed.
 
 ```
 command -v gjalla || pipx install gjalla || uv tool install gjalla
 ```
 
-If none of those work, every later `gjalla ...` command becomes `uvx gjalla ...`. If `uvx` is also missing, stop and print the three install commands for the human.
+If none of those work, every later `gjalla ...` command becomes `uvx gjalla ...`. If `uvx` is also missing, see if you're able to recover by installing missing tools. If not, have the user help you.
 
 ## 2. Wire the repo
+
+For each target repo, we'll setup gjalla. The full gjalla setup includes an agent instruction block, an MCP server, and some agent hooks.
 
 ```
 gjalla setup
@@ -105,35 +99,58 @@ Tell the user how many commits and sessions you recorded, and that the only thin
 gjalla sync
 ```
 
-When sync uploads new records it prints a spend summary underneath: sessions, commits, estimated cost, cost by task type with shares, the most expensive session and what it shipped, and any models it could not price. `gjalla spend show` prints it again any time; `gjalla spend show --json` gives the full payload. Quote it back to the user and add what is interesting: which share of cost went to bug fixes, what the most expensive session was for, anything that surprises you. Do not compute numbers yourself.
+When sync uploads new records it prints a spend summary underneath: sessions, commits, estimated cost, cost by task type with shares, the most expensive session and what it shipped, and any models it could not price. `gjalla spend show` prints it again any time; `gjalla spend show --json` gives the full payload. When you're done with onboarding, you'll quote it back to the user and add what is interesting: which share of cost went to bug fixes, what the most expensive session was for, anything that surprises you. Do not compute numbers yourself.
 
 If sync reports an error, print it and stop.
 
 ## 7. Seed shared memory
 
-Gather every durable, non-obvious fact your agents already learned but never shared:
+The point of this step is the third outcome: a few facts about **this project** that any teammate's agent should know so they don't accidentally stumble to rediscover.
+
+Gather candidates from what your agents already learned but never shared, in any harness the user uses, for example:
 
 - `~/.claude/projects/$ENC/memory/*.md` (skip `MEMORY.md`)
 - `~/.codex/memories/*` if present
 - Sections of `CLAUDE.md`, `AGENTS.md`, or `README.md` headed gotcha, caveat, pitfall, note, or troubleshooting
 - `git log --since=30.days --format=%b | grep -iE 'because|gotcha|note:'`
 
-Reject anything that is a task or TODO, anything matching key, token, password, or secret, and anything already in `gjalla memory show`.
+### What belongs, and what does not
 
-Now compare the candidates with each other before saving any. Group them by subject. Within a group:
+A shared memory is a durable, non-obvious fact about the system or how the team works on it. "The worker deploys before the API, or migrations run against the old schema." "Integration tests need the local stack; the suite passes without it and proves nothing."
+
+Two kinds of candidate must not be saved, and both will look useful:
+
+**Anything about the person rather than the project.** Their editor, their shell, their preferred phrasing, their working hours, their machine's paths, what they personally find annoying. These are real and worth keeping — they just belong in that person's own memory, not the team's. If a fact stops being true when a different teammate sits down, it is personal.
+
+**Anything whose value is itself a secret.** Never record a credential, token, key, password, connection string, or any other value that grants access, even one that looks expired, scoped, or fake, and even when it is the single most useful detail on the page.
+
+The distinction that matters for the second one is between the LOCATION of a secret and the secret. The location is often exactly the fact worth saving:
+
+- Save: "The analysis service reads its Vertex credentials from `GOOGLE_APPLICATION_CREDENTIALS`; without it every model call fails with a 403 that reads like a quota error."
+- Never: the contents of that file, or the key inside it.
+
+If you cannot state a fact without quoting the secret, the fact is not the memory — drop it and, if it looks like a credential that should not be sitting where you found it, say so to the user instead of writing it down.
+
+When a candidate is borderline, leave it out.
+
+### Then compare before you save
+
+Group the survivors by subject. Within a group:
 
 - Two statements that say the same thing are a duplicate: keep the clearer one.
 - Two statements that assert different things about the same subject are a contradiction. Do not pick one by taste. If a minute in the code settles it, save the one the code supports. Otherwise save neither and report the pair with where each came from.
 
-Save 3 to 5 of the survivors:
+Drop anything that is a task or a TODO, and anything already in `gjalla memory show`.
+
+Save whats left, those are your durable memories:
 
 ```
 gjalla memory add "<the fact>" -n "<short-name>" -c project
 ```
 
-Report memory health in one line: candidates found, duplicates collapsed, contradictions found, saved. Then print the facts you saved and: "Remove any with `gjalla memory archive <key>`."
+Report memory health in one line: candidates found, personal or sensitive ones left out, duplicates collapsed, contradictions found, saved. Then print the facts you saved and: "Remove any with `gjalla memory archive <key>`."
 
-## 8. Verify
+## 8. Verify and confirm
 
 ```
 gjalla setup doctor
