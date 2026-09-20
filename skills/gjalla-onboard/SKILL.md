@@ -65,10 +65,10 @@ Exit 0 means signed in; continue. Exit 3 means still waiting: show the URL and c
 gjalla sync
 ```
 
-Sync resolves this repo to a project from its origin remote, creating one if the team has none. Handle its outcomes:
+Sync resolves this repo to a project from its origin remote, creating one if the team has none. The project is named after the repository (`owner/repo`), so do not create one by hand when an origin exists, and never invent a title. Handle its outcomes:
 
 - `AMBIGUOUS_TEAM` (409): show the teams it lists, pick the one the user names, rerun `gjalla sync --team-id <id>`.
-- `NO_ORIGIN`: `gjalla project create -t "$REPO_NAME"`.
+- `NO_ORIGIN`: the repo has no remote to name it from. Use the repository directory name, not the working directory or a description: `gjalla project create -t "$(basename "$(git rev-parse --show-toplevel)")"`.
 - Any other error: print it and stop.
 
 ## 5. Backfill the last 7 days
